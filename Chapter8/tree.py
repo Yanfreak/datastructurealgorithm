@@ -1,4 +1,4 @@
-from Chapter7.link import LinkedQueue
+from Chapter7.link import LinkedQueue, LinkedDeque
 
 class Tree:
     """Abstract base class representing a tree structure."""
@@ -29,7 +29,7 @@ class Tree:
         raise NotImplementedError('must be implemented by subclass')
 
     def num_children(self, p):
-        """Return the number of children thatn Position p has."""
+        """Return the number of children that Position p has."""
         raise NotImplementedError('must be implemented by subclass')
 
     def children(self, p):
@@ -116,6 +116,16 @@ class Tree:
                 for c in self.children(p):
                     fringe.enqueue(c)       # add children to back of queue
 
+    def breadthfirst_deque(self):
+        """Deque version of breathfirst method."""
+        if not self.is_empty():
+            fringe = LinkedDeque()
+            fringe.insert_first(self.root())
+            while not fringe.is_empty():
+                p = fringe.insert_last()
+                yield p 
+                fringe.insert_last(self.children(p))
+
     def positions(self):
         """Generate an iteration of the tree's positions."""
         return self.preorder()      # return entire preorder iteration
@@ -176,6 +186,15 @@ class BinaryTree(Tree):
     def positions(self):
         """Generate an iteration of the tree's positions."""
         return self.inorder()
+
+    def num_children(self, p):
+        """Return the number of children that Position p has."""
+        num = 0
+        if self.left(p) is not None:
+            num += 1
+        if self.right(p) is not None:
+            num += 1
+        return num 
 
 
 class LinkedBinaryTree(BinaryTree):
@@ -347,7 +366,16 @@ class LinkedBinaryTree(BinaryTree):
             node._right = t2._root 
             t2._root = None 
             t2._size = 0
-
+    
+    def _delete_subtree(self, p):
+        """Remove the entire subtree rooted at p."""
+        node = self._validate(p)
+        if self.is_leaf(node):
+            self._size -= 1
+            self._delete(node)
+        else:
+            self._delete_subtree(self.children(node))
+        
 
 def preorder_label(T, p, d, path):
     """Print labeled representation of subtree of T rooted at p at depth d."""
@@ -428,8 +456,8 @@ class PreorderPrintIndentedTour(EulerTour):
         label = '.'.join(str(j+1) for j in path)
         print(2*d*' ' + str(p.element()))
 
-tour = PreorderPrintIndentedTour(T)
-tour.execute()
+#tour = PreorderPrintIndentedTour(T)
+#tour.execute()
 
 class ParenthesizeTour(EulerTour):
     def _hook_previsit(self, p, d, path):
@@ -481,7 +509,7 @@ class BinaryEulerTour(EulerTour):
 class BinaryLayout(BinaryEulerTour):
     """Class for computing (x, y) coordinates for each node of a binary tree."""
     def __init__(self, tree):
-        super().__init__(self, tree):
+        super().__init__(tree)
         self._count = 0
     
     def _hook_invisit(self, p, d, path):
