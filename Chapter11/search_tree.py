@@ -20,7 +20,7 @@ class TreeMap(LinkedBinaryTree, MapBase):
         if k == p.key():
             return p
         elif k < p.key():
-            if self.left(p) is noe None:
+            if self.left(p) is not None:
                 return self._subtree_search(self.left(p), k)
         else:
             if self.right(p) is not None:

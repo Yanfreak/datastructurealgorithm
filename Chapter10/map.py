@@ -121,13 +121,13 @@ class ChainHashMap(HashMapBase):
     def _bucket_delitem(self, j, k):
         bucket = self._table[j]
         if bucket is None:
-            raise KeyError('Key Error: ' + repr(k))
+            raise KeyError('Key Errorn: ' + repr(k))
         del bucket[k]
     
     def __iter__(self):
         for bucket in self._table:
-            if bucket is Not None:      # a nonempty slot
-                for key in bucket:
+            if bucket is not None:      # a nonempty slot
+                for key in bucket._key:
                     yield key 
 
 

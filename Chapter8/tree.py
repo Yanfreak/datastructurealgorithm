@@ -122,7 +122,7 @@ class Tree:
             fringe = LinkedDeque()
             fringe.insert_first(self.root())
             while not fringe.is_empty():
-                p = fringe.insert_last()
+                p = fringe.delete_last()
                 yield p 
                 fringe.insert_last(self.children(p))
 
@@ -288,7 +288,7 @@ class LinkedBinaryTree(BinaryTree):
         self._root = self._Node(e)
         return self._make_position(self._root)
     
-    def add_left(self, p, e):
+    def _add_left(self, p, e):
         """
         Create a new left child for Position p, storing element e.
 
