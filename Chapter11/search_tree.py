@@ -298,7 +298,7 @@ class SplayTreeMap(TreeMap):
             elif (parent == self.left(grand)) == (p == self.left(parent)):
                 # zig-zig case
                 self._rotate(parent)    # move parent up
-                self._retate(p)         # move p up
+                self._rotate(p)         # move p up
             else:
                 # zig-zag case
                 self._rotate(p)
@@ -320,10 +320,10 @@ class RedBlackTreeMap(TreeMap):
     """Sorted map implementation using a red-black tree."""
     class _Node(TreeMap._Node):
         """Node class for red-black tree maintains bit that denotes colour."""
-        __slots__ = 'red'       # surprise: we don't need 'black'
+        __slots__ = '_red'       # surprise: we don't need 'black'
 
         def __init__(self, element, parent=None, left=None, right=None):
-            super().__init__(element, parent, left, right):
+            super().__init__(element, parent, left, right)
             self._red = True    # new node red by default
         
     # positional-based utility methods
@@ -391,4 +391,25 @@ class RedBlackTreeMap(TreeMap):
     
     def _fix_deficit(self, z, y):
         """Resolve black deficit at z, where y is the root of z's heavier subtree."""
-        
+        if not self._is_red(y):
+            x = self._get_red_child(y)  # y is black and has red child
+            if x is not None:
+                old_colour = self._is_red(z)
+                middle = self._restructure(x)
+                self._set_colour(middle, old_colour)
+                self._set_black(self.left(middle))
+                self._set_black(self.right(middle))
+            else:                       # y is black but no red child
+                self._set_red(y)
+                if self._is_red(z):
+                    self._set_black(z)
+                elif not self.is_root(z):
+                    self._fix_deficit(self.parent(z), self.sibling(z))
+        else:                           # y is red 
+            self._rotate(y)
+            self._set_black(y)
+            self._set_red(z)
+            if z == self.right(y):
+                self._fix_deficit(z, self.left(z))
+            else:
+                self._fix_deficit(z, self.right(z))
