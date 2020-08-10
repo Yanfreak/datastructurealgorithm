@@ -1,5 +1,6 @@
 from Chapter7.link import LinkedQueue
 import math
+import random
 
 def merge(S1, S2, S):
     """Merge two sorted Python list S1 and S2 into properly sized list S."""
@@ -94,6 +95,7 @@ def quick_sort(S:LinkedQueue):
         return
     # divide 
     p = S.first()
+    # p = random.choice(S)
     L = LinkedQueue()
     E = LinkedQueue()
     G = LinkedQueue()
@@ -137,7 +139,7 @@ def inplace_quick_sort(S:list, a, b):
     inplace_quick_sort(S, a, left-1)
     inplace_quick_sort(S, left+1, b)
 
-import random
+
 
 def quick_select(S:list, k):
     """Return the kth smallest element of list S, for k from 1 to len(S)."""
@@ -154,3 +156,26 @@ def quick_select(S:list, k):
     else:
         j = k - len(L) - len(E)
         return quick_select(G, j)
+
+
+def radix_sort(nums):
+    RADIX = 10
+    placement = 1
+    max_digit = max(nums)
+
+    while placement < max_digit:
+        buckets = [list() for _ in range(RADIX)]
+        for i in nums:
+            tmp = int((i / placement) % RADIX)
+            buckets[tmp].append(i)
+        a = 0
+        for b in range(RADIX):
+            buck = buckets[b]
+            for i in buck:
+                nums[a] = i
+                a += 1
+        placement *= RADIX
+    return nums
+user_input = input("Input numbers separated by a comma:\n").strip()
+nums = [int(item) for item in user_input.split(',')]
+print(radix_sort(nums))
