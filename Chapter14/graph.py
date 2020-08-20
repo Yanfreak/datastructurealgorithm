@@ -1,3 +1,5 @@
+from Chapter9.priority_queue import AdaptableHeapPriorityQueue
+
 class Graph:
     """Representation of a simple graph using an adjacency map."""
 
@@ -115,3 +117,129 @@ class Graph:
         e = self.Edge(u, v, x)
         self._outgoing[u][v] = e 
         self._incoming[v][u] = e 
+
+
+def DFS(g: Graph, u: Graph.Vertex, discovered: dict):
+    """
+    Perform DFS of the undiscovered portion of Graph g starting at Vertex u.
+    `discovered` is a dictionary mapping each vertex to the edge that was used to discover it during the DFS. (u should be "discovered" prior to the call)
+    Newly discovered vertices will be added to the dictionary as a result.
+    """
+    for e in g.incident_edges(u):   # for every outgoing edge from u
+        v = e.opposite(u)
+        if v not in discovered:     # v is an unvisited vertex
+            discovered[v] = e       # e is the tree edge that discovered v
+            DFS(g, v, discovered)   # recursively explore from v 
+
+
+# Function to reconstruct a directed path from u to v, given the trace of discovery from a DFS started at u. 
+# The function returns an ordered list of vertices on the path.
+def construct_path(u: Graph.Vertex, v: Graph.Vertex, discovered: dict):
+    path = []
+    if v in discovered:
+        # we build list from v to u and then reverse it at the end
+        path.append(v)
+        walk = v
+        while walk is not u:
+            e = discovered[walk]    # find edge leading to walk
+            parent = e.opposite(walk)
+            path.append(parent)
+            walk = parent 
+        path.reverse()              # reorient path from u to v 
+    return path 
+
+
+# Top-level function that returns a DFS forest for an entire graph.
+def DFS_complete(g: Graph):
+    """
+    Perform DFS for entire graph and return forest as a dictionary.
+    Result maps each vertex v to the edge that was used to discover it.
+    (Vertices that are roots of a DFS tree are mapped to None).
+    """
+    forest = {}
+    for u in g.vertices():
+        if u not in forest:
+            forest[u] = None    # u will be the root of a tree
+            DFS(g, u, forest)
+    return forest 
+
+
+
+# breadth-first search on a graph, starting at a designated vertex s
+def BFS(g: Graph, s: Graph.Vertex, discovered: dict):
+    """
+    Perform BFS of the undiscovered portion of Graph g starting at Vertex s.
+    `discovered` is a dictionary mapping each vertex to the edge that was used to discover it during the BFS (s should be mapped to None prior to the call).
+    Newly discovered vertices will be added to the dictionary as a result.
+    """
+    level = [s]             # first level includes only s
+    while len(level) > 0:
+        next_level = []     # prepare to gather newly found vertices
+        for u in level:
+            for e in g.incident_edges(u):   # for every outgoing edge from u
+                v = e.opposite(u)
+                if v not in discovered:     # v is an unvisited vertex
+                    discovered[v] = e       # e is the tree edge that discovered v
+                    next_level.append(v)    # v will be further considered in next pass
+            level = next_level              # relabel 'next' level to become current
+
+
+# Transitive Closure:
+# 传递闭包：通俗的讲就是如果a->b， b->c，那么我们就建立一条a->c的边。
+# 将所有能间接相连的点直接相连。 
+# Floyd能在O(n^3) 求出一个图的传递闭包。
+from copy import deepcopy
+
+def floyd_warshall(g: Graph):
+    """Return a new graph that is the transitive closure of g."""
+    closure = deepcopy(g)
+    verts = list(closure.vertices())    # make indexable list 
+    n = len(verts)
+    for k in range(n):
+        for i in range(n):
+            # verify that edge (i, k) exists in the partial closure
+            if i != k and closure.get_edge(verts[i], verts[k]) is not None:
+                for j in range(n):
+                    # verify that edge (k, j) exists in the partial closure
+                    if i != j != k and closure.get_edge(verts[k], verts[j]) is not None:
+                        # if (i, j) not yet included, add it to the closure
+                        if closure.get_edge(verts[i], verts[j]) is None:
+                            closure.insert_edge(verts[i], verts[j])
+    return closure
+
+
+
+def MST_PrimJarnik(g: Graph):
+    """
+    Compute a minimum spanning tree of weighted graph g.
+    Return a list of edges that comprise the MST (in arbitrary order).
+    """
+    d = {}              # d[v] is bound on distance to tree
+    tree = []           # list of edges in spanning tree
+    pq = AdaptableHeapPriorityQueue()   # d[v] maps to value (v, e=(u,v))
+    pqlocator = {}      # map from vertex to its pq locator
+
+    # for each vertex v of the graph, add an entry to the priority queue,
+    # with the source having distance 0 and all others having infinite distance
+    for v in g.vertices():
+        if len(d) == 0:             # the first node
+            d[v] = 0                # make it the root
+        else:
+            d[v] = float('inf')     # positive infinity
+        pqlocator[v] = pq.add(d[v], (v, None))
+    
+    while not pq.is_empty():
+        key, value = pq.remove_min()
+        u, edge = value             # unpack tuple from pq
+        del pqlocator[u]            # u is no longer in pq
+        if edge is not None:
+            tree.append(edge)       # add edge to tree
+        for link in g.incident_edges(u):
+            v = link.opposite(u)
+            if v in pqlocator:      # thus v not yet in tree
+                # see if edge (u,v) better connects v to the growing tree
+                wgt = link.element()
+                if wgt < d[v]:      # better edge to v?
+                    d[v] = wgt      # update the distance 
+                    pq.update(pqlocator[v], d[v], (v, link))    # update the pq entry
+    return tree 
