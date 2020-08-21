@@ -142,7 +142,7 @@ class HeapPriorityQueue(PriorityQueueBase):
                 self._downheap(small_child)
     
     # public behaviours
-    def __init__(self):
+    def __init__(self, contents=None):
         """Create a new Priority Queue.
         
         By default, queue will be empty. If contents is given, it should be as an iterable sequence of (k, v) tuples specifying the initial contens."""
