@@ -35,3 +35,23 @@ class GraphMatrix:
 
 # R-14.15
 # a star
+
+
+# R-14.16
+# b. [1, 2, 3, 4, 6, 5, 7, 8]; c. [1, 2, 3, 4, 6, 5, 7, 8]
+
+# R-14.19
+# n(n-1)/2
+
+# R-14.27
+# 1-8, 8-2-6-7, 8-5, 5-3, 5-4
+# 
+# 
+# C-14.56
+# def weighted_transitive_closure
+# then def compute_eccentricity
+# max(eccentricity(v))
+# 
+# 
+# C-14.57
+# def compact  

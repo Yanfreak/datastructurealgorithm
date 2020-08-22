@@ -1,4 +1,5 @@
 from Chapter9.priority_queue import AdaptableHeapPriorityQueue, HeapPriorityQueue
+from Chapter6.queue import ArrayQueue
 
 class Graph:
     """Representation of a simple graph using an adjacency map."""
@@ -117,6 +118,20 @@ class Graph:
         e = self.Edge(u, v, x)
         self._outgoing[u][v] = e 
         self._incoming[v][u] = e 
+    
+    def remove_edge(self, e: Edge):
+        """Remove edge e from the graph."""
+        u, v = e.endpoints()
+        del self._outgoing[u][v]
+        del self._incoming[v][u]
+    
+    def remove_vertex(self, v: Vertex):
+        """Remove vertex v from the graph and return the element."""
+        x = v.element()
+        for edge in self.incident_edges(v, outgoing=False):
+            self.remove_edge(edge)
+        del v 
+        return x
 
 
 def DFS(g: Graph, u: Graph.Vertex, discovered: dict):
@@ -182,6 +197,25 @@ def BFS(g: Graph, s: Graph.Vertex, discovered: dict):
                     discovered[v] = e       # e is the tree edge that discovered v
                     next_level.append(v)    # v will be further considered in next pass
             level = next_level              # relabel 'next' level to become current
+
+
+def queue_BFS(g: Graph, s: Graph.Vertex, discovered: dict):
+    """
+    an implementation of the BFS algorithm that uses a FIFO queue,
+    rather than a level-by-level formulation, 
+    to manage vertices that have been discovered until the time when their neighbors are considered.
+    """
+    qe = ArrayQueue()
+    qe.enqueue(s)
+    while not qe.is_empty():
+        u = qe.dequeue()
+        for e in g.incident_edges(u):
+            v = e.opposite(u)
+            if v not in discovered:
+                discovered[v] = e 
+                qe.enqueue(v)
+            
+
 
 
 # Transitive Closure:
@@ -321,3 +355,12 @@ def MST_Kruskal(g: Graph) -> list:
             forest.union(a, b)
     return tree
 
+
+def compact(g: Graph) -> bool:
+    """Return True if the graph is compact, False otherwise."""
+    n = g.vertex_count()
+    for i in range(n):
+        for j in range(i+1):
+            if g.get_edge() is not None:
+                return False
+    return True
