@@ -43,6 +43,10 @@ class Graph:
             """Return element associated with this edge."""
             return self._element
         
+        def update_element(self, x):
+            """Change the element associated with the edge to x."""
+            self._element = x
+        
         def __hash__(self):     # will allow edge to be a map/set key
             return hash((self._origin, self._destination))
     
@@ -56,7 +60,7 @@ class Graph:
         # only create second map for directed graph; use alias for undirected
         self._incoming = {} if directed else self._outgoing
     
-    def is_directed(self):
+    def is_directed(self) -> bool:
         """
         Return True if this is a directed graph; False if undirected.
         Property is based on the original declaration of the graph, not its contents.
@@ -84,7 +88,7 @@ class Graph:
             result.update(secondary_map.values)
         return result 
     
-    def get_edge(self, u, v):
+    def get_edge(self, u, v) -> Graph.Edge:
         """Return the edge from u to v, or None if not adjacent."""
         return self._outgoing[u].get[v]     # self._outgoing is a dict
     
@@ -105,7 +109,7 @@ class Graph:
         for edge in adj[v].values():
             yield edge 
     
-    def insert_vertex(self, x=None):
+    def insert_vertex(self, x=None) -> Graph.Vertex:
         """Insert and return a new Vertex with element x."""
         v = self.Vertex(x)
         self._outgoing[v] = {}
@@ -149,7 +153,7 @@ def DFS(g: Graph, u: Graph.Vertex, discovered: dict):
 
 # Function to reconstruct a directed path from u to v, given the trace of discovery from a DFS started at u. 
 # The function returns an ordered list of vertices on the path.
-def construct_path(u: Graph.Vertex, v: Graph.Vertex, discovered: dict):
+def construct_path(u: Graph.Vertex, v: Graph.Vertex, discovered: dict) -> list:
     path = []
     if v in discovered:
         # we build list from v to u and then reverse it at the end
@@ -165,7 +169,7 @@ def construct_path(u: Graph.Vertex, v: Graph.Vertex, discovered: dict):
 
 
 # Top-level function that returns a DFS forest for an entire graph.
-def DFS_complete(g: Graph):
+def DFS_complete(g: Graph) -> dict:
     """
     Perform DFS for entire graph and return forest as a dictionary.
     Result maps each vertex v to the edge that was used to discover it.
@@ -224,7 +228,7 @@ def queue_BFS(g: Graph, s: Graph.Vertex, discovered: dict):
 # Floyd能在O(n^3) 求出一个图的传递闭包。
 from copy import deepcopy
 
-def floyd_warshall(g: Graph):
+def floyd_warshall(g: Graph) -> Graph:
     """Return a new graph that is the transitive closure of g."""
     closure = deepcopy(g)
     verts = list(closure.vertices())    # make indexable list 
@@ -245,7 +249,7 @@ def floyd_warshall(g: Graph):
 
 
 
-def MST_PrimJarnik(g: Graph):
+def MST_PrimJarnik(g: Graph) -> list:
     """
     Compute a minimum spanning tree of weighted graph g.
     Return a list of edges that comprise the MST (in arbitrary order).
@@ -361,6 +365,30 @@ def compact(g: Graph) -> bool:
     n = g.vertex_count()
     for i in range(n):
         for j in range(i+1):
-            if g.get_edge() is not None:
+            if g.get_edge(i, j) is not None:
                 return False
     return True
+
+
+
+def shortest_paths_floyd_warshall(g: Graph) -> Graph:
+    """
+    Design a variation of Floyd-Warshall’s algorithm for computing the lengths of the shortest
+    paths from each vertex to every other vertex in O(n^3) time.
+    """
+    closure = deepcopy(g)
+    verts = list(closure.vertices())
+    n = len(verts)
+    for k in range(n):
+        for i in range(n):
+            if i != k and closure.get_edge(verts[i], verts[k]) is not None:
+                for j in range(n):
+                    if i != j != k and closure.get_edge(verts[k], verts[j]) is not None:
+                        if closure.get_edge(verts[i], verts[j]) is None:
+                            closure.insert_edge(verts[i], verts[j], closure.get_edge(verts[i], verts[k]).element() + closure.get_edge(verts[k], verts[j]).element())
+                        elif closure.get_edge(verts[i], verts[j]).element() > closure.get_edge(verts[i], verts[k]).element() + closure.get_edge(verts[k], verts[j]).element():
+                            closure.get_edge(verts[i], verts[j]).update_element(closure.get_edge(verts[i], verts[k]).element() + closure.get_edge(verts[k], verts[j]).element())
+    return closure
+
+
+

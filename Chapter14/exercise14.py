@@ -54,4 +54,8 @@ class GraphMatrix:
 # 
 # 
 # C-14.57
-# def compact  
+# def compact
+# 
+# 
+# C-14.58
+# check shortest_paths_floyd_warshall  
